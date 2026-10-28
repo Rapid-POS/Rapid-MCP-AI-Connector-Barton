@@ -69,7 +69,7 @@ Barton is a custom MCP server built by Rapid for CounterPoint. It isn't AI. It d
 | Brawn | Barton | Connects to CounterPoint, runs read-only queries, and supplies the retail and CounterPoint context needed to read the results |
 
 ```
-Your AI (brain)  →  Barton MCP server (brawn)  →  Rapid CP API  →  CounterPoint SQL database
+Your AI (brain)  →  Barton MCP server (brawn)  →  CounterPoint SQL database
 ```
 
 ### What Barton Can See
