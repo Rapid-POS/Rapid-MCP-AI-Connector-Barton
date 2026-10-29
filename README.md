@@ -1,14 +1,16 @@
 # Rapid POS Barton MCP AI Connector
 
-**Updated October 28th 2026**
+**Updated October 29th 2026**
 
-The Rapid Barton MCP AI Connector gives your AI assistant live, read-only access to your CounterPoint data. Ask questions in plain English, like "What are my sales today versus the same day last year?", or build your own dashboards, reports, and tools on top of CounterPoint. Barton is a custom-built MCP (Model Context Protocol) server with retail and CounterPoint skills built in. Along with the data, it gives the AI the context it needs to read that data correctly.
+The Rapid Barton MCP AI Connector gives Claude live, read-only access to your CounterPoint data. Ask questions in plain English, like "What are my sales today versus the same day last year?", or build your own dashboards, reports, and tools on top of CounterPoint. Barton is a custom-built MCP (Model Context Protocol) server with retail and CounterPoint skills built in. Along with the data, it gives the AI the context it needs to read that data correctly.
 
 > **Note:** Barton is read-only. It can't add, change, or delete anything in CounterPoint.
 
+> **New to Barton? Start here.** A full set of FAQs is in Section 17 at the end of this document. If you only read one part, make it [The Basics](#the-basics). It covers what Barton is, what it can see, where you use it, and who it's for, all in a few minutes.
+
 ## Overview
 
-Barton connects your AI assistant (Claude is recommended) to your CounterPoint database through the Rapid CP API. The AI is the "brain" that understands your question and explains the answer. Barton is the "brawn" that runs the queries safely and supplies the CounterPoint knowledge the AI needs, including the database structure, the CounterPoint Data Dictionary, documentation, and Rapid's own CounterPoint expertise. Barton ships with the **Counterpoint AI Guide**, a set of prebuilt dashboards and questions tested to match CounterPoint's own reports. Every query runs under built-in guardrails: it's read-only, written to avoid database lockups, and capped on how many rows it returns. You use Barton from your AI's website or desktop app, on a desk, phone, or tablet. It doesn't add anything to the CounterPoint menus. Updates are delivered automatically to subscribers.
+Barton runs on your CounterPoint server and connects Claude to your CounterPoint database through the Rapid CP API. Claude is the "brain" that understands your question and explains the answer. Barton is the "brawn" that runs the queries safely and supplies the CounterPoint knowledge Claude needs, including the database structure, the CounterPoint Data Dictionary, documentation, and Rapid's own CounterPoint expertise. Barton ships with the **Counterpoint AI Guide**, a set of prebuilt dashboards and questions tested to match CounterPoint's own reports. Every query runs under built-in guardrails: it's read-only, written to avoid database lockups, and capped on how many rows it returns. You use Barton from Claude's website or desktop app, on a desk, phone, or tablet. It doesn't add anything to the CounterPoint menus. Rapid deploys updates automatically to subscribers.
 
 ### Minimum System Requirements
 
@@ -16,6 +18,10 @@ Barton connects your AI assistant (Claude is recommended) to your CounterPoint d
 - Minimum SQL Server version: 2016
 - Minimum Supported Operating System version: Windows Server 2016 or Windows 11 Pro
 - Minimum PowerShell version: 5.1
+- SQL Server set to Mixed Mode authentication, with a SQL administrator login available during installation
+- Outbound internet (HTTPS) access from the CounterPoint server. No inbound firewall changes are needed.
+
+Rapid installs and configures Barton for you.
 
 > **Warning**
 >
@@ -23,17 +29,7 @@ Barton connects your AI assistant (Claude is recommended) to your CounterPoint d
 >
 > If your system does not meet these minimum requirements, please consult your Care Team Lead (vCIO) for an upgrade quote.
 
-Each user also needs their own AI account that supports custom connectors. For Claude, that's a Free, Pro, Max, Team, or Enterprise plan. The Free plan allows 1 custom connector, which is enough for Barton, but has tight usage limits. On Team and Enterprise plans, an account owner adds Barton once and each user then connects to it.
-
-**Note**
-
-Barton is a connector, not a standalone app. You’ll need an active subscription with an AI assistant that supports custom connectors.
-
-We build for Claude, we test against Claude, and Claude is the only assistant we support. Every prompt, every setup instruction and every validation pass we run is against Claude, made by Anthropic — the company that created the MCP standard Barton runs on. It’s the configuration we know performs, and it’s what we recommend without hesitation.
-
-MCP is an open standard, so Barton will technically function with any AI that supports custom MCP connectors, including ChatGPT, Perplexity and others. If that’s already your company standard, it will work — but understand what you’re choosing. We haven’t tested or tuned it there, results will vary, and we can’t troubleshoot it for you. Setup support and accuracy tuning are for Claude configurations only.
-
-Your AI subscription is billed separately, directly by the provider.
+Each user also needs their own Claude account that supports custom connectors (Free, Pro, Max, Team, or Enterprise). The Free plan allows 1 custom connector, which is enough for Barton, but has tight usage limits. On Team and Enterprise plans, an account owner adds Barton once and each user then connects to it.
 
 ## Table of Contents
 
@@ -53,44 +49,39 @@ Your AI subscription is billed separately, directly by the provider.
 - [Section 14: Barton Tools for Developers](#section-14-barton-tools-for-developers)
 - [Section 15: Troubleshooting](#section-15-troubleshooting)
 - [Section 16: Pricing and Subscription](#section-16-pricing-and-subscription)
+- [Section 17: Frequently Asked Questions](#section-17-frequently-asked-questions)
 - [Conclusion](#conclusion)
-
-See [FAQ.md](FAQ.md) for frequently asked questions.
 
 ---
 
 ## Section 1: What Barton Is
 
-Barton is a custom MCP server built by Rapid for CounterPoint. It isn't AI. It doesn't think, guess, or make decisions. When your AI asks for something, Barton supplies its tools, resources, and prompts and runs the queries.
+Barton is a custom MCP server built by Rapid for CounterPoint. It isn't AI. It doesn't think, guess, or make decisions. When Claude asks for something, Barton supplies its tools, resources, and prompts and runs the queries.
 
 | Role | Who | What it does |
 |---|---|---|
-| Brain | Your AI assistant (Claude recommended) | Understands your question, decides what to look up, and explains or presents the answer |
+| Brain | Claude | Understands your question, decides what to look up, and explains or presents the answer |
 | Brawn | Barton | Connects to CounterPoint, runs read-only queries, and supplies the retail and CounterPoint context needed to read the results |
 
 ```
-Your AI (brain)  →  Barton MCP server (brawn)  →  CounterPoint SQL database
+Claude (brain)  →  Barton MCP server (brawn)  →  Rapid CP API  →  CounterPoint SQL database
 ```
 
 ### What Barton Can See
 
-Barton has read access to your full CounterPoint SQL database. If it lives in the database, Barton can show it to your AI. Barton also gives the AI:
+Barton has read access to your full CounterPoint SQL database. If it lives in the database, Barton can show it to Claude. Barton also gives Claude:
 
 - The CounterPoint Data Dictionary (what each table and field means)
 - CounterPoint documentation
 - Rapid's own CounterPoint knowledge, such as how sales, taxes, returns, and inventory value should be calculated
 
-Barton only works with CounterPoint. To combine CounterPoint data with another system, such as Klaviyo, your AI needs its own separate connection to that system.
+Barton only works with CounterPoint. To combine CounterPoint data with another system, such as Klaviyo, Claude needs its own separate connection to that system.
 
 ### Supported AI Assistants
 
-| AI assistant | Status |
-|---|---|
-| Claude (by Anthropic) | Recommended. Rapid builds for, tests, and supports Claude. |
-| ChatGPT | Clients have connected it, but Rapid doesn't test against it. Setup steps differ from Section 5, and results may vary. |
-| Gemini and others | Should work in theory since Barton uses the open MCP standard, but untested. |
+Claude (by Anthropic) is the only AI assistant Rapid builds for, tests, and supports. Other MCP-compatible assistants may work but are untested and not supported.
 
-Rapid only provides troubleshooting and accuracy tuning for Claude. Each user can choose their own AI assistant with their own account. For Claude, the standard models (such as Sonnet) handle most questions well. Higher-reasoning models are available but use more of your plan.
+The standard Claude models (such as Sonnet) handle most questions well. Higher-reasoning models are available but use more of your plan.
 
 ### Ways to Use Barton
 
@@ -120,15 +111,15 @@ Barton protects sensitive personal and account data:
 
 ### Trust, but Verify
 
-Claude can make mistakes. Rapid has done everything in our power to steer Claude to the correct answer every time. The numbers Barton retrieves are accurate, but the AI's interpretation can be wrong, such as reading sales as gross instead of net, handling returns incorrectly, or misreading a time range. Always check the reasoning before acting on anything important. If Claude tells you to order 10,000 widgets, validate why before placing the order.
+Claude can make mistakes. Rapid has done everything in our power to steer Claude to the correct answer every time. The numbers Barton retrieves are accurate, but Claude's interpretation can be wrong, such as reading sales as gross instead of net, handling returns incorrectly, or misreading a time range. Always check the reasoning before acting on anything important. If Claude tells you to order 10,000 widgets, validate why before placing the order.
 
 If an answer looks off, ask Claude to "show the query" or "explain how you calculated that." The SQL behind every answer is available to review.
 
 ### How Your Data Is Handled
 
 - Barton works on a request-only basis. It fetches only the data a question needs.
-- Your data stays in CounterPoint. Rapid does not store your data on its servers, and Barton sends nothing to the AI unless the AI asks for it.
-- Your AI provider's handling of data is governed by its own privacy policies (for Claude, Anthropic's).
+- Your data stays in CounterPoint. Rapid does not store your data on its servers, and Barton sends nothing to Claude unless Claude asks for it.
+- Claude's handling of data is governed by Anthropic's privacy policies.
 
 ## Section 3: Barton Guardrails
 
@@ -156,15 +147,17 @@ Your server's resources are shared. Several users running big, complex questions
 
 ## Section 4: Adding Users
 
-Barton includes **unlimited users** with no per-user charge from Rapid. Each user's AI subscription is separate. During the initial deployment any users identified for connection to Barton, Rapid's MCP AI Connector, are covered under the setup fee. If additional users need to be added later we bill T&M for the time to get the additional users connected.
+Barton includes **unlimited users** with no per-user charge from Rapid. Each user's Claude subscription is separate.
+
+A Claude account alone doesn't give access. Rapid creates each person's Barton sign-in, so contact Rapid Support to add someone later.
 
 - During setup, send Rapid one email with the names and email addresses of all initial users. Setting everyone up at once is faster than adding people one at a time.
 - Only include people authorized to see all CounterPoint cost, sales, and profit data (see Section 2).
-- Each user should have their **own** AI account. Don't share accounts. AI assistants personalize answers based on past conversations, so a shared account mixes different people's history together.
-  
+- Each user should have their **own** Claude account. Don't share accounts. Claude personalizes answers based on past conversations, so a shared account mixes different people's history together.
+
 ## Section 5: Connecting Barton to Claude
 
-After your deployment, Rapid sends a welcome email with your connector URL and sign-in details.
+After your deployment, Rapid sends a welcome email with your connector URL, a username, and a temporary password. You'll set a new password the first time you sign in.
 
 ### Before You Start
 
@@ -174,7 +167,7 @@ After your deployment, Rapid sends a welcome email with your connector URL and s
   https://<your-company>-cp-mcp.rapidextras.com/mcp
   ```
 
-- If you're asked for OAuth credentials, use the username and temporary password from your welcome email.
+- **Leave any OAuth Client ID or Client Secret fields blank** when adding the connector. Your username and password go on the sign-in page that appears afterward. Anything typed in those fields causes a "Client not found" error.
 
 ### Individual Accounts (Free, Pro, Max)
 
@@ -197,8 +190,6 @@ After your deployment, Rapid sends a welcome email with your connector URL and s
 
 Start a new chat and ask a question, or open the Counterpoint AI Guide. Your sign-in can time out after a while. If answers stop coming back, reconnect from your Connectors list.
 
-> **Note:** Using ChatGPT? The steps are different and ChatGPT is not officially support by Rapid POS to work with Barton, MCP AI Connector.
-
 ## Section 6: The Counterpoint AI Guide
 
 The Counterpoint AI Guide is the starting screen for Barton. It shows:
@@ -207,19 +198,21 @@ The Counterpoint AI Guide is the starting screen for Barton. It shows:
 - **Dashboard cards** on the left (see Section 7)
 - **Questions that lead to action**, grouped by category (see Section 8)
 
-Tap a card or question to see the answer on the page. You can also type a card's number in chat ("run 1") or just ask in your own words. If your install has more than one company, the guide asks which company to show first.
+Tap a card or question to see the answer on the page. You can also type a card's number in chat ("run 1") or just ask in your own words.
 
-Questions about a specific location use your primary location. If you only have one location, that's the one used. If you have several, it's the location with the most sales over the last 90 days.
+- If you have more than one company, Claude labels each answer with its company.
+- Stock figures use your **primary location**: your only location, or, if you have several, the one with the most sales in the last 90 days.
+- Sales figures on the dashboards cover **all stores**. To see one store, ask for it by name.
 
 ## Section 7: Prebuilt Dashboards
 
 | # | Dashboard | What it shows |
 |---|---|---|
-| 1 | Store manager dashboard | Today's sales, staff, top customers, and inventory alerts in one live view |
-| 2 | Inventory health | Low stock, out of stock, on order, and dead inventory for your primary location |
-| 3 | Morning open | Yesterday's close, open orders, and what needs attention first |
-| 4 | End-of-day summary | Today's totals, how the day compared, and what to act on tomorrow |
-| 5 | Rep & customer performance | Who's selling, who's buying, and average ticket trends over the last 7 days |
+| 1 | Store manager dashboard | Today's sales against yesterday and last year, sales by rep, top customers, and alerts for low stock, open orders, and open layaways |
+| 2 | Inventory health | Low stock, out of stock, on order, and dead stock at your primary location |
+| 3 | Morning open | Yesterday's sales against the same weekday last week, open customer orders, and items below minimum |
+| 4 | End-of-day summary | Today's totals against yesterday and last year, transaction counts, and items below minimum |
+| 5 | Rep & customer performance | The last 7 days against the 7 before: sales, average ticket, top reps, and top customers |
 
 ## Section 8: Prebuilt Questions
 
@@ -245,6 +238,8 @@ Some answers work a little differently than you might expect:
 | Lapsed customers | Based on each customer's last posted ticket. Cash sales aren't counted. |
 | Reorder today | Vendor comes from the item's vendor setup. A blank vendor means none is on file. |
 
+If item sales answers look empty or out of date, ask Claude to "enable required data aggregation types." It will check CounterPoint's data aggregation tasks and walk you through turning them on.
+
 ## Section 9: Adding Custom Dashboards and Questions
 
 | Option | Behavior |
@@ -252,7 +247,7 @@ Some answers work a little differently than you might expect:
 | Add custom dashboard | Saves a shortcut card. When you tap it, Claude builds the answer fresh in chat each time. |
 | Add custom question | Sends your question to chat. Claude writes and checks the query, then saves it to your list. Tap **Refresh** to see it. |
 
-Custom items are saved in Barton, so everyone using your company's guide sees them.
+Custom items are saved in Barton and shared with everyone connected to your company's Barton. They never replace the prebuilt dashboards and questions.
 
 ## Section 10: Asking Good Questions
 
@@ -289,11 +284,13 @@ Barton follows the same rules as CounterPoint's standard reports (Sales Analysis
 | Unposted / in progress | Open tickets that haven't posted yet. Can include stale tickets that were never closed. |
 | Returns | Netted against sales, same as CounterPoint reports. |
 
+"Today" figures combine posted and in-progress tickets. Earlier days use posted tickets only.
+
 If a number doesn't match a CounterPoint report, check that you're comparing the same thing (net vs. gross, posted only vs. posted plus open).
 
 ## Section 12: Reports, Exports, and Scheduled Reporting
 
-Barton supplies the data. Your AI handles how it's presented, whether that's a table in chat, a web page, a PDF, an Excel file, or a downloadable CSV.
+Barton supplies the data. Claude handles how it's presented, whether that's a table in chat, a web page, a PDF, an Excel file, or a downloadable CSV.
 
 ### Crystal Reports
 
@@ -305,9 +302,9 @@ Answers are limited to 500 rows (see Section 3). For bigger data sets, ask Claud
 
 ### Scheduled and Recurring Reports
 
-Barton doesn't schedule or send reports. Scheduling is handled by your AI platform, if it supports scheduled tasks. Keep in mind:
+Barton doesn't schedule or send reports. Scheduling is handled by Claude, if your plan supports scheduled tasks. Keep in mind:
 
-- Every AI-driven refresh uses tokens and counts against your AI plan's usage limits. A report that refreshes many times a day can use up a plan quickly.
+- Every AI-driven refresh uses tokens and counts against your Claude plan's usage limits. A report that refreshes many times a day can use up a plan quickly.
 - For reports that run on a schedule (for example, sent to a group every day at noon), the better option is to have Claude help build a permanent report that pulls from an API. After that, refreshes don't use the AI at all.
 - That report can use the NCR CounterPoint API you may already have, or Rapid's separate API suite. Contact Rapid to talk through options.
 
@@ -321,13 +318,13 @@ Barton is read-only on purpose, and Rapid does not recommend enabling write acce
 | Rapid API suite | A separate Rapid product for building tools that write data while following CounterPoint's business logic. Claude can use it alongside Barton for more advanced builds. Not required to use Barton. |
 | SQL or API updates | For IT staff and developers only. Changes should go through your own review and controls. |
 
-Before committing any import, run CounterPoint's **Verify** option. It simulates the import and shows errors before anything changes. Always review the AI's file and assumptions first. A person should always be the final approver.
+Before committing any import, run CounterPoint's **Verify** option. It simulates the import and shows errors before anything changes. Always review Claude's file and assumptions first. A person should always be the final approver.
 
 > **Note:** APIs are developer-level tools. Used incorrectly, they can cause problems or affect performance just like a heavy query.
 
 ## Section 14: Barton Tools for Developers
 
-If you're building your own dashboards, reports, or apps with Barton, these are the tools it makes available to the AI.
+If you're building your own dashboards, reports, or apps with Barton, these are the tools it makes available to Claude.
 
 | Tool | Used for |
 |---|---|
@@ -354,15 +351,18 @@ Follow these rules in custom queries so results match CounterPoint reports:
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
+| "Client not found" when connecting | Something was typed in the OAuth Client ID or Client Secret fields | Remove the connector and add it again with the URL only. |
 | Barton shows as failed to connect | Connector endpoint or Rapid CP API unreachable | Retry. If it persists, contact Rapid Support. |
 | Answers stop mid-session or show an auth error | Sign-in timed out | Reconnect Barton from your Connectors list. |
+| Requests are refused | Your Barton sign-in isn't set up for your company | Contact Rapid Support. |
+| A question was refused | It asked for protected data | Ask for totals or counts instead (Section 2). |
 | Numbers don't match a CounterPoint report | Comparing different things (net vs. gross, posted vs. open) | See Section 11, then ask Claude to show the query. |
 | Today's numbers look high | Old open tickets that were never closed | Compare to the Flash Sales Report and close or void old tickets. |
 | Answer stops at 500 rows | Per-answer row limit | Narrow the date range, store, or category, or ask for an Excel export query (Section 12). |
 | Some customer details are hidden | Personal information protection | Expected. Ask for counts or totals instead (Section 2). |
 | Answer takes a while | Analytical questions need several lookups | Expected. Simple questions return in seconds; deeper analysis takes longer. |
 | Server slows down during heavy use | Several large queries running at once | Spread out heavy analysis, especially during business hours. |
-| Running out of AI plan usage | Plan limits, or frequent scheduled refreshes | Upgrade the AI plan, or move recurring reports to an API (Section 12). |
+| Running out of Claude plan usage | Plan limits, or frequent scheduled refreshes | Upgrade the Claude plan (Pro suits most users), or move recurring reports to an API (Section 12). |
 | A result is wrong or something expected is missing | AI interpretation or data issue | Save the question, the answer, and what you expected, and send them to Rapid Support. |
 
 ## Section 16: Pricing and Subscription
@@ -370,47 +370,21 @@ Follow these rules in custom queries so results match CounterPoint reports:
 | Item | Cost | Covers |
 |---|---|---|
 | One-time installation | $299 (non-refundable) | Onboarding, installation, configuration, and the CounterPoint connection |
-| Monthly subscription | $99 per month, month-to-month, cancel anytime | Unlimited users, ongoing updates, compatibility maintenance, and new general-purpose skills. Rapid does not cap queries. |
-| AI plan | Billed by your AI provider (Claude: $0 to $20 per person per month) | Each user's own AI account. Free suits occasional use, Pro suits most users, heavy users may need more. |
+| Monthly subscription | $99 per month, month-to-month, cancel anytime | Unlimited users, updates deployed by Rapid, compatibility maintenance, and new general-purpose skills. Rapid does not cap queries. |
+| Claude plan | $0 to $20 per person per month, billed by Anthropic | Each user's own Claude account. Free suits occasional use, Pro suits most users, heavy users may need more. |
 | Custom development | $156 per hour, T&M | Custom skills, dashboards, user-level access restrictions, or write tools. Many skills take about 30 minutes ($78). Estimates are approved before work begins. |
 
-## Conclusion
+## Section 17: Frequently Asked Questions
 
-The Rapid Barton MCP AI Connector gives your AI assistant safe, read-only access to your CounterPoint data. With it you can get quick answers in plain English, use the Counterpoint AI Guide's prebuilt dashboards, analyze purchasing and inventory, or build custom tools on top of CounterPoint.
-
-Before go-live, confirm your system meets the minimum requirements and choose your users carefully, since Barton shows all data to everyone connected. After deployment, compare a few key numbers against your CounterPoint reports and keep the trust-but-verify approach for anything important. Changes to CounterPoint always go through you.
-
-For help with connecting, custom dashboards or questions, reporting, or troubleshooting, contact Rapid Support at 619-754-4100 or through the contact form at [rapidpos.com](https://rapidpos.com/counterpoint-ai-meet-barton/).
-
-# Barton MCP AI Connector: Frequently Asked Questions
-
-**Updated October 28th 2026**
-
-For full setup and usage details, see the [README](README.md).
-
-## Contents
-
-- [The Basics](#the-basics)
-- [AI Assistants and Accounts](#ai-assistants-and-accounts)
-- [Security and Access](#security-and-access)
-- [Accuracy](#accuracy)
-- [Limits and Performance](#limits-and-performance)
-- [Reports and Scheduling](#reports-and-scheduling)
-- [Changing CounterPoint Data](#changing-counterpoint-data)
-- [Pricing and Billing](#pricing-and-billing)
-- [Getting Started](#getting-started)
-
----
-
-## The Basics
+### The Basics
 
 **What is Barton?**
 
-Barton is Rapid's MCP connector for NCR CounterPoint. It gives your AI assistant read-only access to your CounterPoint data, along with the CounterPoint Data Dictionary, documentation, and Rapid's CounterPoint knowledge, so the AI can understand what the data means.
+Barton is Rapid's MCP connector for NCR CounterPoint. It gives Claude read-only access to your CounterPoint data, along with the CounterPoint Data Dictionary, documentation, and Rapid's CounterPoint knowledge, so Claude can understand what the data means.
 
 **Is Barton AI?**
 
-No. Barton is a connector to AI. Your AI assistant (such as Claude) is the brain that does the reasoning. Barton is the brawn that safely pulls the data and gives the AI the context to ask the right questions.
+No. Barton is a connector to AI. Claude is the brain that does the reasoning. Barton is the brawn that safely pulls the data and gives Claude the context to ask the right questions.
 
 **Why can't Claude do this on its own?**
 
@@ -418,15 +392,15 @@ Claude has no access to your private business systems and doesn't know how Count
 
 **What data can Barton see?**
 
-Everything in your CounterPoint SQL database. If it lives in the database, Barton can show it to your AI, with the exception of protected personal information (see [Security and Access](#security-and-access)).
+Everything in your CounterPoint SQL database. If it lives in the database, Barton can show it to Claude, with the exception of protected personal information (see [Security and Access](#security-and-access)).
 
 **Where do I use Barton? Is it in the CounterPoint menus?**
 
-No. You use Barton from your AI's website or desktop app, on a computer, phone, or tablet.
+No. You use Barton from Claude's website or desktop app, on a computer, phone, or tablet.
 
 **Can Barton pull in data from Klaviyo, Mailchimp, or other systems?**
 
-No. Barton only works with CounterPoint. Your AI would need its own separate connection to the other system. For example, you could use Barton to pick a list of customers and then build the email list in Klaviyo.
+No. Barton only works with CounterPoint. Claude would need its own separate connection to the other system. For example, you could use Barton to pick a list of customers and then build the email list in Klaviyo.
 
 **What can I use it for?**
 
@@ -447,29 +421,29 @@ No. Barton only works with CounterPoint. Your AI would need its own separate con
 | Multi-site retailers | Cross-location visibility without logging into each system |
 | IT staff and developers | Build custom dashboards and saved queries for the rest of the team, without writing reports from scratch |
 
-## AI Assistants and Accounts
+### AI Assistants and Accounts
 
 **Which AI assistant should I use?**
 
 Claude, by Anthropic. Rapid builds for, tests, and supports Claude.
 
-**Does it work with ChatGPT or Gemini?**
+**Does it work with ChatGPT or other AI assistants?**
 
-Clients have connected ChatGPT, but Rapid doesn't test against it, setup steps are different, and results may vary. Gemini should work in theory but hasn't been tested. Rapid only provides troubleshooting and accuracy tuning for Claude.
+Other MCP-compatible assistants may work, but they're untested and not supported. Claude is the only AI assistant Rapid builds for, tests, and supports.
 
-**Can different people on my team use different AI assistants?**
+**Does a Claude account give me access to Barton?**
 
-Yes. Each user picks their own AI and uses their own account.
+Not on its own. Rapid creates each person's Barton sign-in. Contact Rapid Support to add someone.
 
-**Can we share one AI account?**
+**Can we share one Claude account?**
 
-We don't recommend it. AI assistants personalize answers using past conversations, so a shared account mixes everyone's history together.
+We don't recommend it. Claude personalizes answers using past conversations, so a shared account mixes everyone's history together.
 
 **Which Claude model should I use?**
 
 The standard models (such as Sonnet) handle most questions well. Higher-reasoning models are available but use more of your plan.
 
-## Security and Access
+### Security and Access
 
 **Does Barton follow CounterPoint user security?**
 
@@ -485,13 +459,13 @@ Yes. Birth dates, driver's license and tax IDs, card and bank numbers, and syste
 
 **Is my data secure?**
 
-Barton works on request only. It fetches just what each question needs, Rapid stores nothing on its servers, and Barton sends nothing to the AI unless asked. Your AI provider's privacy policies cover how it handles data.
+Barton works on request only. It fetches just what each question needs, Rapid stores nothing on its servers, and Barton sends nothing to Claude unless asked. Anthropic's privacy policies cover how Claude handles data.
 
-## Accuracy
+### Accuracy
 
 **How accurate are the results?**
 
-The numbers Barton retrieves are accurate. The AI's interpretation can be wrong, such as reading sales as gross instead of net, mishandling returns, or misreading a date range. Trust, but verify, especially for purchasing, staffing, and financial decisions.
+The numbers Barton retrieves are accurate. Claude's interpretation can be wrong, such as reading sales as gross instead of net, mishandling returns, or misreading a date range. Trust, but verify, especially for purchasing, staffing, and financial decisions.
 
 **How can I check an answer?**
 
@@ -501,7 +475,7 @@ Ask Claude to "show the query" or "explain how you calculated that." The SQL beh
 
 Save the question, the answer, and what you expected, and send them to Rapid Support.
 
-## Limits and Performance
+### Limits and Performance
 
 **Is there a limit on how much data I can get?**
 
@@ -519,7 +493,7 @@ Simple questions come back in seconds. Analytical questions take several lookups
 
 No. Barton only reads CounterPoint data.
 
-## Reports and Scheduling
+### Reports and Scheduling
 
 **Can Barton build Crystal Reports?**
 
@@ -527,13 +501,13 @@ No. Crystal is licensed SAP software, and reports have to be built in the licens
 
 **Can Barton send a report every day at a set time?**
 
-Barton doesn't schedule anything. Some AI platforms can run scheduled tasks, but every AI refresh uses your plan's usage. For recurring reports, have Claude help build a permanent report that pulls from an API (the NCR CounterPoint API or Rapid's API suite). Then refreshes don't use the AI at all.
+Barton doesn't schedule anything. Claude can run scheduled tasks on some plans, but every refresh uses your plan's usage. For recurring reports, have Claude help build a permanent report that pulls from an API (the NCR CounterPoint API or Rapid's API suite). Then refreshes don't use the AI at all.
 
 **Can I download results?**
 
 Yes. Ask for a CSV, Excel file, or PDF.
 
-## Changing CounterPoint Data
+### Changing CounterPoint Data
 
 **Can Barton update CounterPoint?**
 
@@ -547,7 +521,7 @@ Ask Claude for an import-ready CSV and instructions, then bring it in with Count
 
 No. The Rapid API suite is a separate product. It's only needed if you want to build tools that write data.
 
-## Pricing and Billing
+### Pricing and Billing
 
 **How much does Barton cost?**
 
@@ -555,11 +529,11 @@ A one-time, non-refundable installation fee of $299 and $99 per month, month-to-
 
 **Is there a per-user charge?**
 
-No. Barton includes unlimited users. Each user's AI subscription is separate and billed by the AI provider.
+No. Barton includes unlimited users. Each user's Claude subscription is separate and billed by Anthropic.
 
 **What does the monthly subscription cover?**
 
-Ongoing updates, compatibility maintenance, and new general-purpose skills. Rapid doesn't cap queries. Your AI plan has its own usage limits.
+Unlimited users, updates deployed by Rapid, compatibility maintenance, and new general-purpose skills. Rapid doesn't cap queries. Your Claude plan has its own usage limits.
 
 **What about custom work?**
 
@@ -567,22 +541,35 @@ Custom skills, dashboards, user-level access restrictions, and write tools are b
 
 **Will Barton improve over time?**
 
-Yes. Improvements ship automatically to subscribers with no reinstall or upgrade fees.
+Yes. Rapid deploys improvements automatically to subscribers with no reinstall or upgrade fees.
 
-## Getting Started
+### Getting Started
 
 **What are the system requirements?**
 
-CounterPoint 8.5.6.2 or later, SQL Server 2016 or later, Windows Server 2016 or Windows 11 Pro, and PowerShell 5.1. Your environment must also meet Rapid's CI/CD Connector Requirements.
+CounterPoint 8.5.6.2 or later, SQL Server 2016 or later in Mixed Mode authentication, Windows Server 2016 or Windows 11 Pro, PowerShell 5.1, and outbound HTTPS access from the server. No inbound firewall changes are needed. Your environment must also meet Rapid's CI/CD Connector Requirements.
 
 **How do I add users?**
 
-Send Rapid one email with the names and email addresses of everyone who should have access. Only include people authorized to see all CounterPoint data.
+Send Rapid one email with the names and email addresses of everyone who should have access. Only include people authorized to see all CounterPoint data. 
+Note that users of "Barton" added during deployment are covered under the one-time setup fee. However, time spent to add users after the initial MCP AI Connector deployment will be billed at T&M for the time it takes to make the new connections.
 
 **How do I connect?**
 
-After installation, Rapid sends a welcome email with your connector URL, sign-in details, and step-by-step instructions for Claude. See Section 5 of the README.
+After installation, Rapid sends a welcome email with your connector URL, a username, a temporary password, and step-by-step instructions for Claude. Leave any OAuth Client ID or Secret fields blank when adding the connector. See Section 5.
+
+**What if I get a "Client not found" error?**
+
+Something was typed in the OAuth Client ID or Client Secret fields. Remove the connector and add it again with the URL only.
 
 **Who do I contact for help?**
 
 Rapid Support at 619-754-4100, or through the contact form at [rapidpos.com](https://rapidpos.com/counterpoint-ai-meet-barton/).
+
+## Conclusion
+
+The Rapid Barton MCP AI Connector gives Claude safe, read-only access to your CounterPoint data. With it you can get quick answers in plain English, use the Counterpoint AI Guide's prebuilt dashboards, analyze purchasing and inventory, or build custom tools on top of CounterPoint.
+
+Before go-live, confirm your system meets the minimum requirements and choose your users carefully, since Barton shows all data to everyone connected. After deployment, compare a few key numbers against your CounterPoint reports and keep the trust-but-verify approach for anything important. Changes to CounterPoint always go through you.
+
+For more answers, see Section 17. For help with connecting, custom dashboards or questions, reporting, or troubleshooting, contact Rapid Support at 619-754-4100 or through the contact form at [rapidpos.com](https://rapidpos.com/counterpoint-ai-meet-barton/).
