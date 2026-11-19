@@ -471,9 +471,70 @@ The numbers Barton retrieves are accurate. Claude's interpretation can be wrong,
 
 Ask Claude to "show the query" or "explain how you calculated that." The SQL behind every answer is available to review. You can also compare against the matching CounterPoint report.
 
+**Why does Claude use tables that start with DM_, and why is that data old?**
+
+The DM_ tables are CounterPoint's data aggregation (DataAgg) tables, built into CounterPoint about 15 years ago. Claude finds them and likes to use them. Most CounterPoint dealers turn the aggregation processes off because NCR's processes don't run reliably and very few CounterPoint reports use these tables. If aggregation was turned off at your company, the DM_ tables stop at that date, and any answer built on them is out of date.
+
+For sales history, the posted ticket tables (PS_TKT_HIST and related tables) and PS_DOC are the right sources. They're current, and most CounterPoint reports are built on them.
+
+You have two options:
+
+- Tell Claude not to use any table whose name starts with DM_. Claude can usually get the same answer from the standard tables.
+- Ask Rapid to set up its rewrite of the aggregation processes. There's no charge for the rewrite, and many Rapid clients use it. We do charge for setup and monitoring which takes about 5 hours of Rapid's time billed at T&M.
+
+**Claude keeps telling me a DM_ table stopped updating. Is that a problem? Should I open a support ticket?**
+
+No, and no ticket is needed. It's normal for DM_ tables to stop updating when the aggregation jobs are turned off. If your reports and queries already use the posted ticket tables and PS_DOC, nothing is missing. When Claude finds stale DM_ data, it usually falls back to the sales tables. To stop the reminders, tell Claude to skip any table starting with DM_. If you use it often, add that instruction to your Claude project instructions or personal preferences.
+
+**How do I know if the data behind an answer is current?**
+
+Ask Claude which tables it used and the most recent date in each one. If a date is much older than you expect, tell Claude to use a different source.
+
+**Why don't Claude's numbers match my CounterPoint report?**
+
+Usually Claude and the report are using different definitions. Common examples:
+
+- Counting all ticket types instead of sale tickets only
+- Gross sales instead of net sales, or including tax
+- Comparing to the same calendar date last year instead of the same weekday
+- Checking stock at the item level instead of by size and color for gridded items
+- Using the base price instead of the location price
+
+Ask Claude to show the query, then tell it the definition you want. See [Feedback, Fixes, and Coaching Claude](#feedback-fixes-and-coaching-claude).
+
 **What if I get a wrong answer?**
 
-Save the question, the answer, and what you expected, and send them to Rapid Support.
+First, try coaching Claude (see below). If you still can't get the right result, save the question, the answer, and what you expected, and send them to Rapid Support.
+
+### Feedback, Fixes, and Coaching Claude
+
+**Do I need a fix from Rapid, or can I coach Claude?**
+
+Most of the time you can coach Claude. Most Barton users find they can get Claude to work around a problem by telling it what they want. Not every problem needs a programmer. For example:
+
+- "Don't use any table that starts with DM_."
+- "Only count sale tickets."
+- "Check stock by size and color, not just by item."
+- "Compare to the same weekday last year."
+- "Use each store's own price, not the base price."
+
+If you give Claude the same instruction often, add it to your Claude project instructions or personal preferences so you don't have to repeat it.
+
+**How does Rapid decide what to fix?**
+
+Rapid prioritizes fixes that benefit all Barton clients. Barton's monthly fee is low, so the number of fixes Rapid can make each month is limited. To get an issue looked at, send a specific, real example of a wrong result that you couldn't coach Claude around.
+
+**Claude reviewed Barton and rated some issues "Critical" or "High." Does Rapid use those ratings?**
+
+Rapid reviews every report, but Claude's severity ratings are Claude's opinion. Rapid decides priority based on real business impact and how many clients a fix would help. Many items Claude flags can be handled by coaching Claude.
+
+**What if an issue is hurting my business and I don't want to wait?**
+
+Rapid can build a custom solution for you as a paid project, billed T&M at $156 per hour. Estimates are approved before work begins.
+
+**Can Rapid make Claude always answer correctly?**
+
+No. Barton gives Claude accurate data and clear guidance, but Claude decides how to respond. Barton guides Claude. It doesn't control it. Some limitations can't be fully solved, which is why trust, but verify still applies.
 
 ### Limits and Performance
 
@@ -541,7 +602,7 @@ Custom skills, dashboards, user-level access restrictions, and write tools are b
 
 **Will Barton improve over time?**
 
-Yes. Rapid deploys improvements automatically to subscribers with no reinstall or upgrade fees.
+Yes. Rapid refines Barton based on real use and deploys improvements automatically to subscribers, with no reinstall or upgrade fees. If something isn't working the way you expect, tell Rapid Support. Your feedback shapes what gets fixed next.
 
 ### Getting Started
 
@@ -551,8 +612,9 @@ CounterPoint 8.5.6.2 or later, SQL Server 2016 or later in Mixed Mode authentica
 
 **How do I add users?**
 
-Send Rapid one email with the names and email addresses of everyone who should have access. Only include people authorized to see all CounterPoint data. 
-Note that users of "Barton" added during deployment are covered under the one-time setup fee. However, time spent to add users after the initial MCP AI Connector deployment will be billed at T&M for the time it takes to make the new connections.
+Send Rapid one email with the names and email addresses of everyone who should have access. Only include people authorized to see all CounterPoint data.
+
+Users added during the initial deployment are covered by the one-time installation fee. Time spent adding users after the initial deployment is billed T&M for the time it takes to make the new connections.
 
 **How do I connect?**
 
@@ -565,11 +627,3 @@ Something was typed in the OAuth Client ID or Client Secret fields. Remove the c
 **Who do I contact for help?**
 
 Rapid Support at 619-754-4100, or through the contact form at [rapidpos.com](https://rapidpos.com/counterpoint-ai-meet-barton/).
-
-## Conclusion
-
-The Rapid Barton MCP AI Connector gives Claude safe, read-only access to your CounterPoint data. With it you can get quick answers in plain English, use the Counterpoint AI Guide's prebuilt dashboards, analyze purchasing and inventory, or build custom tools on top of CounterPoint.
-
-Before go-live, confirm your system meets the minimum requirements and choose your users carefully, since Barton shows all data to everyone connected. After deployment, compare a few key numbers against your CounterPoint reports and keep the trust-but-verify approach for anything important. Changes to CounterPoint always go through you.
-
-For more answers, see Section 17. For help with connecting, custom dashboards or questions, reporting, or troubleshooting, contact Rapid Support at 619-754-4100 or through the contact form at [rapidpos.com](https://rapidpos.com/counterpoint-ai-meet-barton/).
